@@ -1,0 +1,6 @@
+- name: Zainstaluj poprawki bezpieczenstwa
+  ansible.builtin.dnf:
+    name: "*"
+    security: yes
+    bugfix: yes
+    state: latest

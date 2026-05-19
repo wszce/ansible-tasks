@@ -1,0 +1,7 @@
+---
+- name: Główny playbook aktualizacji
+  hosts: all
+  become: yes
+  tasks:
+    - name: Wykonaj zadania z folderu tasks
+      ansible.builtin.include_tasks: tasks/main.yml
