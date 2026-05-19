@@ -3,3 +3,9 @@
     name: "*"
     security: yes
     state: latest
+  register: dnf_result
+
+- name: Wyswietl co zostalo zainstalowane
+  ansible.builtin.debug:
+    var: dnf_result.results
+  when: dnf_result.results is defined
