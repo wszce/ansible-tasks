@@ -1,3 +1,0 @@
----
-# Wymuszamy Pythona 3.6 dla ósemek
-ansible_python_interpreter: /usr/bin/python3.6
