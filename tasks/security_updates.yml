@@ -1,11 +1,19 @@
-- name: Zainstaluj poprawki bezpieczenstwa
-  ansible.builtin.dnf:
-    name: "*"
-    security: yes
-    state: latest
-  register: dnf_result
+- name: Security updates
+  hosts: all
+  gather_facts: no
+  tasks:
+    - name: Sprawdź wersję systemu
+      shell: "grep -o 'release 8' /etc/redhat-release || echo '9'"
+      register: rhel_version
+      changed_when: false
 
-- name: Wyswietl co zostalo zainstalowane
-  ansible.builtin.debug:
-    var: dnf_result.results
-  when: dnf_result.results is defined
+    - name: Aktualizacja BEZPIECZEŃSTWA dla RHEL 8
+      command: dnf update --security -y
+      when: "'release 8' in rhel_version.stdout"
+
+    - name: Aktualizacja BEZPIECZEŃSTWA dla RHEL 9
+      dnf:
+        name: '*'
+        state: latest
+        security: yes  # To jest kluczowe dla modułu dnf
+      when: "'9' in rhel_version.stdout"
