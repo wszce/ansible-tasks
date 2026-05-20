@@ -1,1 +1,4 @@
-ansible_python_interpreter: /usr/bin/python3.9
+---
+# Używamy Pythona 3.9 tam, gdzie jest on domyślny (RHEL 9) lub gdzie go ręcznie doinstalowałeś (RHEL 8),
+# a jeśli tam nie ma 'dnf' dla 3.9, Ansible spróbuje fallbacku do standardowego Pythona.
+ansible_python_interpreter: "{{ '/usr/bin/python3.9' if ansible_distribution_major_version == '9' else '/usr/bin/python3' }}"
