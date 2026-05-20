@@ -1,17 +1,14 @@
----
-- name: Security updates
-  hosts: all
-  # Tutaj NIE UŻYWAJ 'gather_facts: false', zostaw domyślnie.
-  # Jeśli interpreter 3.9 zadziała, 'setup' po prostu przejdzie na 3.9.
-  tasks:
-    - name: Update RHEL 8
-      command: dnf update --security -y
-      when: ansible_distribution_major_version == '8'
+# Plik: tasks/security_updates.yml
+# BEZ LINI "hosts:", "name:" (dla play), i "gather_facts:"
 
-    - name: Update RHEL 9
-      dnf:
-        name: '*'
-        state: latest
-        security: yes
-      when: ansible_distribution_major_version == '9'
+- name: Aktualizacja RHEL 8
+  command: dnf update --security -y
+  when: ansible_distribution_major_version == '8'
+
+- name: Aktualizacja RHEL 9
+  dnf:
+    name: '*'
+    state: latest
+    security: yes
+  when: ansible_distribution_major_version == '9'
 
