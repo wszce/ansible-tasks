@@ -1,20 +1,17 @@
 ---
 - name: Security updates
   hosts: all
-  gather_facts: false  # To jest pierwsza linia obrony
-  vars:
-    # To wymusza na Ansible, żeby nie uruchamiał żadnych modułów zbierających fakty
-    ANSIBLE_GATHER_FACTS: "no" 
+  # Tutaj NIE UŻYWAJ 'gather_facts: false', zostaw domyślnie.
+  # Jeśli interpreter 3.9 zadziała, 'setup' po prostu przejdzie na 3.9.
   tasks:
-    # Używamy tylko 'raw', aby ominąć wszelkie biblioteki Pythona
     - name: Update RHEL 8
-      raw: dnf update --security -y
-      when: ansible_distribution_major_version | default('8') == '8'
+      command: dnf update --security -y
+      when: ansible_distribution_major_version == '8'
 
     - name: Update RHEL 9
       dnf:
         name: '*'
         state: latest
         security: yes
-      when: ansible_distribution_major_version | default('9') == '9'
+      when: ansible_distribution_major_version == '9'
 
