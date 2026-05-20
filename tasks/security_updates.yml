@@ -1,20 +1,18 @@
+---
 - name: Security updates
   hosts: all
-  gather_facts: no
+  gather_facts: false 
   tasks:
-    - name: "Sprawdzenie wersji RHEL"
-      command: cat /etc/redhat-release
-      register: rhel_version
-      changed_when: false
+    # Używamy raw do wszystkiego, co może dotknąć ósemki.
+    # Raw nie używa bibliotek Ansible na maszynie docelowej.
+    - name: Update RHEL 8
+      raw: dnf update --security -y
+      when: "'8' in ansible_distribution_major_version | default('9')"
 
-    - name: "Aktualizacja RHEL 8 (Metoda bezpośrednia)"
-      command: /usr/bin/dnf update --security -y
-      when: "'release 8' in rhel_version.stdout"
-
-    - name: "Aktualizacja RHEL 9 (Moduł DNF)"
+    - name: Update RHEL 9
       dnf:
         name: '*'
         state: latest
         security: yes
-      when: "'release 9' in rhel_version.stdout"
+      when: "'9' in ansible_distribution_major_version | default('9')"
 
