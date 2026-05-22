@@ -1,0 +1,5 @@
+---
+- name: Aktualizacje Poprawek 
+  hosts: all
+  become: yes
+  tasks:
