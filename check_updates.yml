@@ -1,30 +1,22 @@
 ---
-- name: Sprawdź i raportuj aktualizacje RHEL z podziałem na typy
+- name: Sprawdź i raportuj aktualizacje RHEL
   hosts: all
   become: yes
   gather_facts: yes
 
   tasks:
-    # Sekcja dla RHEL 8
+    # --- SEKCJA ZBIERANIA DANYCH (RHEL 8) ---
     - name: Sprawdź aktualizacje dla RHEL 8
       block:
         - name: Pobierz listę (Security i Bugfix)
           command: "dnf check-update --{{ item }}"
-          register: dnf_check
-          loop:
-            - security
-            - bugfix
-          failed_when: dnf_check.rc not in [0, 100]
+          register: dnf_check_rhel8
+          loop: [security, bugfix]
+          failed_when: dnf_check_rhel8.rc not in [0, 100]
           changed_when: false
-          
-        - name: Wyświetl wyniki dla RHEL 8
-          debug:
-            msg: "Host: {{ inventory_hostname }} | Dostępne aktualizacje {{ item.item }}: {{ item.stdout_lines }}"
-          loop: "{{ dnf_check.results }}"
-          when: item.rc == 100
       when: ansible_distribution_major_version == '8'
 
-    # Sekcja dla RHEL 9+
+    # --- SEKCJA ZBIERANIA DANYCH (RHEL 9+) ---
     - name: Sprawdź aktualizacje dla RHEL 9+
       block:
         - name: Pobierz listę (Security i Bugfix)
@@ -32,14 +24,26 @@
             list: updates
             security: "{{ item == 'security' }}"
             bugfix: "{{ item == 'bugfix' }}"
-          register: dnf_list
-          loop:
-            - security
-            - bugfix
-          
-        - name: Wyświetl wyniki dla RHEL 9+
-          debug:
-            msg: "Host: {{ inventory_hostname }} | Dostępne aktualizacje {{ item.item }}: {{ item.results | map(attribute='name') | list }}"
-          loop: "{{ dnf_list.results }}"
-          when: item.results | length > 0
+          register: dnf_list_rhel9
+          loop: [security, bugfix]
       when: ansible_distribution_major_version | int >= 9
+
+    # --- SEKCJA PODSUMOWANIA (Wyświetlana na końcu) ---
+    - name: PODSUMOWANIE AKTUALIZACJI
+      debug:
+        msg: >
+          --------------------------------------------------
+          HOST: {{ inventory_hostname }}
+          {% if ansible_distribution_major_version == '8' %}
+            {% for item in dnf_check_rhel8.results %}
+            {{ item.item | upper }}:
+              {{ item.stdout_lines | default('Brak') }}
+            {% endfor %}
+          {% else %}
+            {% for item in dnf_list_rhel9.results %}
+            {{ item.item | upper }}:
+              {{ item.results | map(attribute='name') | list | default('Brak') }}
+            {% endfor %}
+          {% endif %}
+          --------------------------------------------------
+      run_once: false
